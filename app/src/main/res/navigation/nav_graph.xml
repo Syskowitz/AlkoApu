@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainPageFragment">
+
+    <fragment
+        android:id="@+id/loaderFragment"
+        android:name="com.example.alko_apu.LoaderFragment"
+        android:label="Loader" />
+    <fragment
+        android:id="@+id/mainPageFragment"
+        android:name="com.example.alko_apu.MainPageFragment"
+        android:label="fragment_etusivu"
+        tools:layout="@layout/fragment_main_page" >
+        <action
+            android:id="@+id/action_etusivu_to_LoaderFragment"
+            app:destination="@id/loaderFragment" />
+        <action
+            android:id="@+id/action_etusivu_to_suosikit"
+            app:destination="@id/favouritesFragment" />
+        <action
+            android:id="@+id/action_etusivu_to_arvostelut"
+            app:destination="@id/ratingsFragment" />
+        <action
+            android:id="@+id/action_MainPageFragment_to_searchReadyFragment"
+            app:destination="@id/searchReadyFragment" />
+        <action
+            android:id="@+id/action_mainPageFragment_to_showAllProductsFragment3"
+            app:destination="@id/showAllProductsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/ratingsFragment"
+        android:name="com.example.alko_apu.RatingsFragment"
+        android:label="fragment_arvostelut"
+        tools:layout="@layout/fragment_ratings" />
+    <fragment
+        android:id="@+id/favouritesFragment"
+        android:name="com.example.alko_apu.FavouritesFragment"
+        android:label="fragment_suosikit"
+        tools:layout="@layout/fragment_favourites" />
+    <fragment
+        android:id="@+id/searchReadyFragment"
+        android:name="com.example.alko_apu.SearchReadyFragment"
+        android:label="fragment_search_ready"
+        tools:layout="@layout/fragment_search_ready" >
+        <action
+            android:id="@+id/action_searchReadyFragment_to_analyzeFragment"
+            app:destination="@id/analyzeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/analyzeFragment"
+        android:name="com.example.alko_apu.AnalyzeFragment"
+        android:label="fragment_analyze"
+        tools:layout="@layout/fragment_analyze" >
+        <action
+            android:id="@+id/action_analyzeFragment_to_favouritesFragment"
+            app:destination="@id/favouritesFragment" />
+        <action
+            android:id="@+id/action_analyzeFragment_to_rateFragment"
+            app:destination="@id/rateFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/rateFragment"
+        android:name="com.example.alko_apu.RateFragment"
+        android:label="fragment_rate"
+        tools:layout="@layout/fragment_rate" />
+    <fragment
+        android:id="@+id/showAllProductsFragment"
+        android:name="com.example.alko_apu.ShowAllProductsFragment"
+        android:label="fragment_show_all_products"
+        tools:layout="@layout/fragment_show_all_products" />
+</navigation>
