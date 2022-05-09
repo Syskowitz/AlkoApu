@@ -12,6 +12,7 @@ import android.widget.Spinner;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 
 import java.util.ArrayList;
 
@@ -40,6 +41,16 @@ public class ShowAllProductsFragment extends Fragment {
         // Set adapter for ListView
         ArrayAdapter<AlkoProduct> adapterListView = new ArrayAdapter<AlkoProduct>(inflater.getContext(), android.R.layout.simple_list_item_1, AlkoProductTempArray);
         allProductsLV.setAdapter(adapterListView);
+        allProductsLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView adapterView, View view, int i, long l) {
+                // Use clicked product as selected product
+                AlkoProduct product = (AlkoProduct) adapterView.getItemAtPosition(i);
+                alkoContainer.setSelectedProduct(product);
+                // Show product info
+                Navigation.findNavController(view).navigate(R.id.searchReadyFragment);
+            }
+        });
         // Add all different types of drinks :)
         // Could also be done better but who cares :/
         spinnerFilterText.add("Punaviinit"); // index 0
@@ -51,7 +62,7 @@ public class ShowAllProductsFragment extends Fragment {
         spinnerFilterText.add("Siiderit"); // den siiderin
         spinnerFilterText.add("Juomasekoitukset");
         spinnerFilterText.add("Vodkat ja Viinat");
-        spinnerFilterText.add("Ginit ja muut viinat");
+        spinnerFilterText.add("Ginit ja maustetut viinat"); // Tämä ei toimi -> onkin oikeasti ja maustetut
         spinnerFilterText.add("Rommit");
         spinnerFilterText.add("Konjakit");
         spinnerFilterText.add("Brandyt, Armanjakit ja Calvadosit");

@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,23 +35,50 @@ public class RatingsFragment extends Fragment {
     private Spinner ratingsChooser;
     private ArrayList<String> spinnerContent;
     private ArrayList<Rating> ratingsToShow;
+    ArrayAdapter<Rating> adapter;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_ratings, container, false);
-        ratingsToShow = new ArrayList<>();
-        try {
+        ratingsToShow = new ArrayList<Rating>();
+        /* try {
             ratingsToShow = alkoContainer.getRatingList();
         } catch (NullPointerException e) { // Proceed to show empty list if no ratings are found :)
-        }
+        }*/
 
         spinnerContent = new ArrayList<>();
         alkoContainer = new ViewModelProvider(requireActivity()).get(AlkoDataContainer.class);
         ratingsListing = (ListView) view.findViewById(R.id.ratingsList);
         ratingsChooser = (Spinner) view.findViewById(R.id.ratingsFilter);
+
         ArrayAdapter<Rating> adapter = new ArrayAdapter<Rating>(inflater.getContext(), android.R.layout.simple_list_item_1, ratingsToShow);
         ratingsListing.setAdapter(adapter);
+
+        // Clicking list shows information about the product
+        ratingsListing.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView adapterView, View view, int i, long l) {
+                // Use clicked product as selected product
+                Rating rating = (Rating) adapterView.getItemAtPosition(i);
+                alkoContainer.setSelectedProduct(rating.getProduct());
+                // Show product info
+                Navigation.findNavController(view).navigate(R.id.searchReadyFragment);
+            }
+        });
+        // Long click to delete a product from favourites
+        ratingsListing.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView adapterView, View view, int i, long l) {
+                // Find out, what product is being deleted and pass it to the dialog
+                Rating rating = (Rating) adapterView.getItemAtPosition(i);
+                RatingsFragment.ConfirmDeleteDialogRating dialog = new RatingsFragment.ConfirmDeleteDialogRating(rating, alkoContainer.getRatingList(),
+                        (ArrayAdapter<Rating>)ratingsListing.getAdapter());
+                dialog.show(getActivity().getSupportFragmentManager(), "rating_delete");
+                return true;
+            }
+        });
+
         for (int i = 0; i<6; i++) {
             spinnerContent.add(Integer.toString(i) + " tähden arvostelut");
         }
@@ -64,44 +92,16 @@ public class RatingsFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 // Not sure if switch state is really even necessary here -_- but anyway
-                switch ((int) ratingsChooser.getSelectedItemPosition()) {
-                    case 0:
-                        adapter.clear();
-                        // Filter ratingList and display the matching ratings
-                        adapter.addAll(filterRatings(0));
-                        adapter.notifyDataSetChanged();
-                        break;
-                    case 1:
-                        adapter.clear();
-                        adapter.addAll(filterRatings(1));
-                        adapter.notifyDataSetChanged();
-                        break;
-                    case 2:
-                        adapter.clear();
-                        adapter.addAll(filterRatings(2));
-                        adapter.notifyDataSetChanged();
-                        break;
-                    case 3:
-                        adapter.clear();
-                        adapter.addAll(filterRatings(3));
-                        adapter.notifyDataSetChanged();
-                        break;
-                    case 4:
-                        adapter.clear();
-                        adapter.addAll(filterRatings(4));
-                        adapter.notifyDataSetChanged();
-                        break;
-                    case 5:
-                        adapter.clear();
-                        adapter.addAll(filterRatings(5));
-                        adapter.notifyDataSetChanged();
-                        break;
-                    default:
-                        adapter.clear();
-                        // Displays all ratings
-                        adapter.addAll(alkoContainer.getRatingList());
-                        adapter.notifyDataSetChanged();
+                adapter.clear();
+                int selection = (int) ratingsChooser.getSelectedItemPosition();
+                System.out.println(selection);
+                if (selection==6) {
+                    adapter.addAll(alkoContainer.getRatingList());
+                } else {
+                    System.out.println("No PRKL!");
+                    adapter.addAll(filterRatings(selection));
                 }
+                adapter.notifyDataSetChanged();
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) { } // Do nothing :)
@@ -109,31 +109,37 @@ public class RatingsFragment extends Fragment {
 
         return view;
     }
+
+    /*@Override
+    public void onStart() {
+        super.onStart();
+        // Update the list when the fragment is shown
+        adapter = new ArrayAdapter<Rating>(getContext(), android.R.layout.simple_list_item_1, alkoContainer.getRatingList());
+        ratingsListing.setAdapter(adapter);
+    }*/
+
     // Simple method to find ratings that match the wanted stars (given rate)
     public ArrayList<Rating> filterRatings(int filterID) {
         ArrayList<Rating> newList = new ArrayList<>();
+        System.out.println("rating " + filterID);
         for (Rating rating : alkoContainer.getRatingList()) {
+            System.out.println(rating);
             if (rating.getRating() == filterID) {
                 newList.add(rating); // Add rating to tempListing
             }
         }
         return newList;
     }
-
-
-
-
-
     // Lissää loputkin
-    /*
-    public static class ConfirmDeleteDialog extends DialogFragment {
-        private AlkoProduct productToRemove;
-        private RatingList ratingList;
-        private ArrayAdapter<AlkoProduct> listAdapter;
 
-        public ConfirmDeleteDialog(AlkoProduct product, ratingList list, ArrayAdapter adapter) {
+    public static class ConfirmDeleteDialogRating extends DialogFragment {
+        private Rating ratingToRemove;
+        private RatingList ratingList;
+        private ArrayAdapter<Rating> listAdapter;
+
+        public ConfirmDeleteDialogRating(Rating rating, RatingList list, ArrayAdapter adapter) {
             super();
-            productToRemove = product;
+            ratingToRemove = rating;
             ratingList = list;
             listAdapter = adapter;
         }
@@ -146,7 +152,7 @@ public class RatingsFragment extends Fragment {
                     .setPositiveButton("Kyllä", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // Remove selected item from favourites
-                            ratingList.remove(productToRemove);
+                            ratingList.remove(ratingToRemove);
                             // Save changes to the file
                             try {
                                 ratingList.saveDataToLocalFile();
@@ -154,7 +160,7 @@ public class RatingsFragment extends Fragment {
                                 exc.printStackTrace();
                             }
                             // Remove item also from the list view
-                            listAdapter.remove(productToRemove);
+                            listAdapter.remove(ratingToRemove);
                         }
                     })
                     .setNegativeButton("Ei", new DialogInterface.OnClickListener() {
@@ -166,5 +172,5 @@ public class RatingsFragment extends Fragment {
             return builder.create();
         }
 
-    }*/
+    }
 }
